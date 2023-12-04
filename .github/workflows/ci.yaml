@@ -1,5 +1,8 @@
 name: ci-folang-workflow
-on: [pull_request]
+on: 
+  pull_request:
+    branches:
+      - develop
 jobs:
   check-application:
     runs-on: ubuntu-latest
