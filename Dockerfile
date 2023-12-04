@@ -1,9 +1,11 @@
-FROM golang:latest
+FROM golang:1.20
 
 WORKDIR /app
 
-COPY . . 
+RUN go mod init test
 
-RUN  go build -o math
+COPY . . 
+ 
+RUN go build -o math
 
 CMD ["./math"]
