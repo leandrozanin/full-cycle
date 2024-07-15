@@ -1,43 +1,23 @@
-pipeline { 
-    // install golang 1.14 on Jenkins node 
-    agent any
-    tools {
-        go '1.22.5'
+// Run on an agent where we want to use Go
+node {
+    // Ensure the desired Go version is installed on this agent,
+    // using the name defined in the Global Tool Configuration
+    def root = tool type: 'go', name: 'go-1.20'
+
+    ws("${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}/") {
+       withEnv(["GOROOT=${root}", "PATH+GO=${root}/bin"]) {
+                
+                stage('Checkout'){
+                    sh 'go version'
+                    echo 'Checking'
+                    sh 'git clone https://github.com/leandrozanin/full-cycle'
+                    sh 'cd ./full-cycle && go mod tidy'
+                    sh 'cd ./full-cycle && go test ./...'
+                    
+                   // sh 'git checkout develop'
+                }
+                
+       }
     }
-    environment {
-        GO1225MODULE = 'on'
-        CGO_ENABLED = 0 
-        GOPATH = "${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}"
-    }
-    stages {
-        stage("unit-test") {
-            steps {
-                echo 'UNIT TEST EXECUTION STARTED'
-                sh 'go test ./...'
-            }
-        }
-        stage("functional-test") {
-            steps {
-                echo 'FUNCTIONAL TEST EXECUTION STARTED'
-                sh 'go test ./...'
-            }
-        }
-        stage("build") {
-            steps {
-                echo 'BUILD EXECUTION STARTED'
-                sh 'go version'
-                sh 'go get ./...'
-                sh 'go build math.go'
-            }
-        }
-        // stage('deliver') {
-        //     agent any
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerhubPassword', usernameVariable: 'dockerhubUser')]) {
-        //         sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
-        //         sh 'docker push shadowshotx/product-go-micro'
-        //         }
-        //     }
-        // }
-    }
+   
 }
